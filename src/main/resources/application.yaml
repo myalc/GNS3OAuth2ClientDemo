@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: GNS3OAuth2ClientDemo
+  security:
+    oauth2:
+      client:
+        registration:
+          gns3-client:
+            provider: gns3-provider
+            authorization-grant-type: password
+            client-authentication-method: basic
+            scope: read, oob
+            client-id: 1
+            username: ${GNS3_USERNAME}
+            password: ${GNS3_PASSWORD}
+        provider:
+          gns3-provider:
+            token-uri: ${GNS3_SERVER}/v3/access/users/login
+            backend-host: ${GNS3_SERVER}
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        security:
+          web: TRACE
