@@ -6,14 +6,17 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.client.RestClient;
 
 @Configuration
@@ -21,6 +24,15 @@ public class RestClientConfig {
 
 	@Autowired
 	ApplicationProperties prop;
+
+	private OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
+
+	public String readAccessToken() {
+		OAuth2AuthorizedClient oAuth2AuthorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(
+				"gns3-client", SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+		OAuth2AccessToken accessToken = oAuth2AuthorizedClient.getAccessToken();
+		return accessToken.getTokenValue();
+	}
 
 	@Bean
 	public RestClient restClient(OAuth2AuthorizedClientManager authorizedClientManager) {
@@ -33,6 +45,7 @@ public class RestClientConfig {
 	public OAuth2AuthorizedClientManager authorizedClientManager(
 			ClientRegistrationRepository clientRegistrationRepository,
 			OAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
+		this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
 		@SuppressWarnings("deprecation")
 		OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
 				.refreshToken().password().build();
@@ -46,6 +59,7 @@ public class RestClientConfig {
 			contextAttributes.put(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, prop.getGns3CredPassw());
 			return contextAttributes;
 		});
+
 		return authorizedClientManager;
 	}
 }

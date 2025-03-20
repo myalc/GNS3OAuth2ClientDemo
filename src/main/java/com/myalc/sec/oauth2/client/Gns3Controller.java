@@ -15,6 +15,9 @@ public class Gns3Controller {
 	@Autowired
 	private final ApplicationProperties prop;
 
+	@Autowired
+	private RestClientConfig restClientConfig;
+
 	public Gns3Controller(RestClient restClient, ApplicationProperties prop) {
 		this.restClient = restClient;
 		this.prop = prop;
@@ -22,9 +25,11 @@ public class Gns3Controller {
 
 	@GetMapping("/v0/projects")
 	public String fetchProjects() {
-		return restClient.get().uri(prop.getGns3Backend() + "/v3/projects")
+		String str = restClient.get().uri(prop.getGns3Backend() + "/v3/projects")
 				.attributes(RequestAttributeClientRegistrationIdResolver.clientRegistrationId("gns3-client")).retrieve()
 				.body(String.class);
+		System.out.println(restClientConfig.readAccessToken());
+		return str;
 	}
 
 }
